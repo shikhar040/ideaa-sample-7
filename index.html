@@ -64,6 +64,9 @@
             z-index: 100;
             transition: var(--transition);
             backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .dark-mode .app-header {
@@ -79,6 +82,32 @@
 
         .dark-mode .app-name {
             color: var(--dark-accent);
+        }
+
+        .profile-settings-btn {
+            position: absolute;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--light-text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .profile-settings-btn:hover {
+            background-color: var(--light-elements);
+        }
+
+        .dark-mode .profile-settings-btn {
+            color: var(--dark-text);
+        }
+
+        .dark-mode .profile-settings-btn:hover {
+            background-color: var(--dark-elements);
         }
 
         /* Navigation */
@@ -221,6 +250,8 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
         }
 
         .username:hover {
@@ -229,6 +260,29 @@
 
         .dark-mode .username:hover {
             color: var(--dark-accent);
+        }
+
+        .username-edit {
+            margin-left: 8px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            transition: var(--transition);
+        }
+
+        .username-edit:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .user-display-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #65676B;
+            margin-top: 2px;
+        }
+
+        .dark-mode .user-display-name {
+            color: #A0A0A0;
         }
 
         .timestamp {
@@ -560,6 +614,65 @@
             font-weight: 800;
             margin-bottom: 8px;
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-username {
+            font-size: 1.1rem;
+            color: #65676B;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-mode .profile-username {
+            color: #A0A0A0;
+        }
+
+        .username-edit-large {
+            margin-left: 8px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .username-edit-large:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .profile-details {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-detail {
+            display: flex;
+            align-items: center;
+            background-color: var(--light-elements);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+        }
+
+        .dark-mode .profile-detail {
+            background-color: var(--dark-elements);
+        }
+
+        .profile-detail i {
+            margin-right: 6px;
+            color: var(--light-accent);
+        }
+
+        .dark-mode .profile-detail i {
+            color: var(--dark-accent);
         }
 
         .profile-stats {
@@ -2142,6 +2255,11 @@
             .nav-icon {
                 font-size: 1.2rem;
             }
+            
+            .profile-details {
+                flex-direction: column;
+                align-items: center;
+            }
         }
 
         @media (max-width: 360px) {
@@ -2174,6 +2292,9 @@
     <!-- App Header -->
     <header class="app-header">
         <h1 class="app-name">PollSocial</h1>
+        <button class="profile-settings-btn" id="profileSettingsBtn">
+            <i class="fas fa-cog"></i>
+        </button>
     </header>
 
     <!-- Home Screen -->
@@ -2257,6 +2378,20 @@
                 </div>
                 <div class="profile-info">
                     <div class="profile-name" id="profileName">Jordan Taylor</div>
+                    <div class="profile-username" id="profileUsername">
+                        <span>@jordant</span>
+                        <i class="fas fa-pencil-alt username-edit-large"></i>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <i class="fas fa-venus-mars"></i>
+                            <span id="profileGender">Female</span>
+                        </div>
+                        <div class="profile-detail">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profilePronoun">She/Her</span>
+                        </div>
+                    </div>
                     <div class="profile-stats">
                         <div class="stat">
                             <div class="stat-value">1.2K</div>
@@ -2317,6 +2452,19 @@
                 </div>
                 <div class="profile-info">
                     <div class="profile-name" id="userProfileName">User Name</div>
+                    <div class="profile-username" id="userProfileUsername">
+                        <span>@username</span>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <i class="fas fa-venus-mars"></i>
+                            <span id="userProfileGender">Not specified</span>
+                        </div>
+                        <div class="profile-detail">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="userProfilePronoun">Not specified</span>
+                        </div>
+                    </div>
                     <div class="profile-stats">
                         <div class="stat">
                             <div class="stat-value" id="userFollowers">0</div>
@@ -2482,8 +2630,32 @@
                 <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
             </div>
             <div class="form-group">
+                <label class="form-label" for="editDisplayName">Display Name</label>
+                <input type="text" id="editDisplayName" class="form-input" value="Jordan Taylor">
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="editUsername">Username</label>
-                <input type="text" id="editUsername" class="form-input" value="Jordan Taylor">
+                <input type="text" id="editUsername" class="form-input" value="jordant">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="editGender">Gender</label>
+                <select id="editGender" class="form-input">
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="editPronoun">Pronouns</label>
+                <select id="editPronoun" class="form-input">
+                    <option value="she-her">She/Her</option>
+                    <option value="he-him">He/Him</option>
+                    <option value="they-them">They/Them</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                </select>
             </div>
             <div class="form-group">
                 <label class="form-label" for="editBio">Bio</label>
@@ -2660,8 +2832,11 @@
             currentUser: {
                 id: 1,
                 name: "Jordan Taylor",
+                username: "jordant",
                 bio: "Digital designer & productivity enthusiast. Love creating polls about tech, design, and lifestyle.",
                 profilePic: null,
+                gender: "female",
+                pronoun: "she-her",
                 followers: 1200,
                 impressions: 24500,
                 likes: 356,
@@ -2674,8 +2849,11 @@
                 {
                     id: 2,
                     name: "Shikhar Dixit",
+                    username: "shikhard",
                     bio: "Tech enthusiast and poll creator. Love discussing new technologies and trends.",
                     profilePic: null,
+                    gender: "male",
+                    pronoun: "he-him",
                     followers: 850,
                     impressions: 12000,
                     likes: 210,
@@ -2684,8 +2862,11 @@
                 {
                     id: 3,
                     name: "Cosmicpoll",
+                    username: "cosmicpoll",
                     bio: "Creating polls about space, science, and the universe. Ask me anything about cosmos!",
                     profilePic: null,
+                    gender: "non-binary",
+                    pronoun: "they-them",
                     followers: 3200,
                     impressions: 45000,
                     likes: 890,
@@ -2694,8 +2875,11 @@
                 {
                     id: 4,
                     name: "Nishkarsh Mishra",
+                    username: "nishkarsh",
                     bio: "Developer and content creator. Passionate about open source and community building.",
                     profilePic: null,
+                    gender: "male",
+                    pronoun: "he-him",
                     followers: 1500,
                     impressions: 28000,
                     likes: 420,
@@ -2704,8 +2888,11 @@
                 {
                     id: 5,
                     name: "Swatantra Singh",
+                    username: "swatantra",
                     bio: "Digital marketer and social media strategist. Love analyzing trends and user behavior.",
                     profilePic: null,
+                    gender: "male",
+                    pronoun: "he-him",
                     followers: 2100,
                     impressions: 35000,
                     likes: 650,
@@ -2714,8 +2901,11 @@
                 {
                     id: 6,
                     name: "Vimal Awasthi",
+                    username: "vimala",
                     bio: "UI/UX designer focused on creating beautiful and functional interfaces.",
                     profilePic: null,
+                    gender: "female",
+                    pronoun: "she-her",
                     followers: 1800,
                     impressions: 32000,
                     likes: 540,
@@ -2724,8 +2914,11 @@
                 {
                     id: 7,
                     name: "Shubham Dey",
+                    username: "shubhamd",
                     bio: "Full-stack developer and tech blogger. Sharing knowledge and building cool stuff.",
                     profilePic: null,
+                    gender: "male",
+                    pronoun: "he-him",
                     followers: 950,
                     impressions: 15000,
                     likes: 320,
@@ -2737,6 +2930,7 @@
                     id: 1,
                     userId: 2,
                     userName: "Shikhar Dixit",
+                    userUsername: "shikhard",
                     userProfilePic: null,
                     question: "What's your favorite programming language for web development?",
                     options: [
@@ -2759,6 +2953,7 @@
                     id: 2,
                     userId: 3,
                     userName: "Cosmicpoll",
+                    userUsername: "cosmicpoll",
                     userProfilePic: null,
                     question: "Which social media platform do you use most frequently?",
                     options: [
@@ -2781,6 +2976,7 @@
                     id: 3,
                     userId: 4,
                     userName: "Nishkarsh Mishra",
+                    userUsername: "nishkarsh",
                     userProfilePic: null,
                     question: "What's your preferred method for staying productive?",
                     options: [
@@ -2805,6 +3001,7 @@
                     id: 4,
                     userId: 1,
                     userName: "Jordan Taylor",
+                    userUsername: "jordant",
                     userProfilePic: null,
                     question: "What's your go-to design tool in 2023?",
                     options: [
@@ -2830,6 +3027,7 @@
                     pollId: 1,
                     userId: 3,
                     userName: "Cosmicpoll",
+                    userUsername: "cosmicpoll",
                     userProfilePic: null,
                     text: "I'm a big fan of TypeScript - the type safety has saved me so many times!",
                     likes: 5,
@@ -2841,8 +3039,9 @@
                             pollId: 1,
                             userId: 2,
                             userName: "Shikhar Dixit",
+                            userUsername: "shikhard",
                             userProfilePic: null,
-                            text: "@Cosmicpoll Completely agree! The developer experience is so much better with TypeScript.",
+                            text: "Completely agree! The developer experience is so much better with TypeScript.",
                             likes: 2,
                             timestamp: "1h",
                             userLiked: false,
@@ -2852,8 +3051,9 @@
                                     pollId: 1,
                                     userId: 1,
                                     userName: "Jordan Taylor",
+                                    userUsername: "jordant",
                                     userProfilePic: null,
-                                    text: "@Shikhar Dixit I've been meaning to learn TypeScript. Any good resources?",
+                                    text: "I've been meaning to learn TypeScript. Any good resources?",
                                     likes: 1,
                                     timestamp: "30m",
                                     userLiked: false,
@@ -2868,6 +3068,7 @@
                     pollId: 1,
                     userId: 4,
                     userName: "Nishkarsh Mishra",
+                    userUsername: "nishkarsh",
                     userProfilePic: null,
                     text: "Python with Django for backend, JavaScript/React for frontend is my perfect stack.",
                     likes: 3,
@@ -2880,6 +3081,7 @@
                     pollId: 4,
                     userId: 1,
                     userName: "Jordan Taylor",
+                    userUsername: "jordant",
                     userProfilePic: null,
                     text: "I've been using Figma for all my design work and it's been amazing for collaboration!",
                     likes: 8,
@@ -2892,6 +3094,7 @@
                 {
                     id: 2,
                     name: "Shikhar Dixit",
+                    username: "shikhard",
                     profilePic: null,
                     status: "Online",
                     lastSeen: "2 min ago",
@@ -2919,6 +3122,7 @@
                 {
                     id: 3,
                     name: "Cosmicpoll",
+                    username: "cosmicpoll",
                     profilePic: null,
                     status: "Offline",
                     lastSeen: "1 hour ago",
@@ -2940,6 +3144,7 @@
                 {
                     id: 4,
                     name: "Nishkarsh Mishra",
+                    username: "nishkarsh",
                     profilePic: null,
                     status: "Online",
                     lastSeen: "Just now",
@@ -2959,6 +3164,7 @@
                     type: "like",
                     userId: 3,
                     userName: "Cosmicpoll",
+                    userUsername: "cosmicpoll",
                     pollId: 4,
                     pollQuestion: "What's your go-to design tool in 2023?",
                     commentId: null,
@@ -2970,6 +3176,7 @@
                     type: "comment",
                     userId: 2,
                     userName: "Shikhar Dixit",
+                    userUsername: "shikhard",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 1,
@@ -2981,6 +3188,7 @@
                     type: "reply",
                     userId: 2,
                     userName: "Shikhar Dixit",
+                    userUsername: "shikhard",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 2,
@@ -2992,6 +3200,7 @@
                     type: "like_comment",
                     userId: 4,
                     userName: "Nishkarsh Mishra",
+                    userUsername: "nishkarsh",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 4,
@@ -3003,6 +3212,7 @@
                     type: "follow",
                     userId: 5,
                     userName: "Swatantra Singh",
+                    userUsername: "swatantra",
                     pollId: null,
                     pollQuestion: null,
                     commentId: null,
@@ -3030,10 +3240,16 @@
         const commentInput = document.getElementById('commentInput');
         const profilePicLarge = document.getElementById('profilePicLarge');
         const profileName = document.getElementById('profileName');
+        const profileUsername = document.getElementById('profileUsername');
         const profileBio = document.getElementById('profileBio');
+        const profileGender = document.getElementById('profileGender');
+        const profilePronoun = document.getElementById('profilePronoun');
         const userProfilePicLarge = document.getElementById('userProfilePicLarge');
         const userProfileName = document.getElementById('userProfileName');
+        const userProfileUsername = document.getElementById('userProfileUsername');
         const userProfileBio = document.getElementById('userProfileBio');
+        const userProfileGender = document.getElementById('userProfileGender');
+        const userProfilePronoun = document.getElementById('userProfilePronoun');
         const userFollowers = document.getElementById('userFollowers');
         const userImpressions = document.getElementById('userImpressions');
         const userLikes = document.getElementById('userLikes');
@@ -3048,6 +3264,7 @@
         const notificationValue = document.getElementById('notificationValue');
         const settingsBtn = document.getElementById('settingsBtn');
         const editProfileBtn = document.getElementById('editProfileBtn');
+        const profileSettingsBtn = document.getElementById('profileSettingsBtn');
         const messageUserList = document.getElementById('messageUserList');
         const messageThread = document.getElementById('messageThread');
         const messagesContainer = document.getElementById('messagesContainer');
@@ -3336,7 +3553,11 @@
                         ${profilePicContent}
                     </div>
                     <div class="user-info">
-                        <div class="username" data-user-id="${poll.userId}">${poll.userName}</div>
+                        <div class="username" data-user-id="${poll.userId}">
+                            ${poll.userName}
+                            ${isOwnPoll ? `<i class="fas fa-pencil-alt username-edit"></i>` : ''}
+                        </div>
+                        <div class="user-display-name">@${poll.userUsername}</div>
                         <div class="timestamp">${poll.timestamp}</div>
                     </div>
                     <button class="poll-menu-btn">
@@ -3506,7 +3727,12 @@
         // Update profile display
         function updateProfileDisplay() {
             profileName.textContent = appState.currentUser.name;
+            profileUsername.querySelector('span').textContent = `@${appState.currentUser.username}`;
             profileBio.textContent = appState.currentUser.bio;
+            
+            // Update gender and pronoun
+            profileGender.textContent = formatGender(appState.currentUser.gender);
+            profilePronoun.textContent = formatPronoun(appState.currentUser.pronoun);
             
             if (appState.currentUser.profilePic) {
                 profilePicLarge.innerHTML = `<img src="${appState.currentUser.profilePic}" alt="${appState.currentUser.name}">`;
@@ -3517,13 +3743,42 @@
             }
         }
 
+        // Format gender for display
+        function formatGender(gender) {
+            const genderMap = {
+                'female': 'Female',
+                'male': 'Male',
+                'non-binary': 'Non-binary',
+                'other': 'Other',
+                'prefer-not-to-say': 'Prefer not to say'
+            };
+            return genderMap[gender] || 'Not specified';
+        }
+
+        // Format pronoun for display
+        function formatPronoun(pronoun) {
+            const pronounMap = {
+                'she-her': 'She/Her',
+                'he-him': 'He/Him',
+                'they-them': 'They/Them',
+                'other': 'Other',
+                'prefer-not-to-say': 'Prefer not to say'
+            };
+            return pronounMap[pronoun] || 'Not specified';
+        }
+
         // Update user profile display
         function updateUserProfileDisplay(user) {
             userProfileName.textContent = user.name;
+            userProfileUsername.querySelector('span').textContent = `@${user.username}`;
             userProfileBio.textContent = user.bio;
             userFollowers.textContent = user.followers.toLocaleString();
             userImpressions.textContent = user.impressions.toLocaleString();
             userLikes.textContent = user.likes.toLocaleString();
+            
+            // Update gender and pronoun
+            userProfileGender.textContent = formatGender(user.gender);
+            userProfilePronoun.textContent = formatPronoun(user.pronoun);
             
             if (user.profilePic) {
                 userProfilePicLarge.innerHTML = `<img src="${user.profilePic}" alt="${user.name}">`;
@@ -3573,7 +3828,22 @@
                         messageUserList.style.display = 'block';
                         messageThread.classList.remove('active');
                     }
+                    
+                    // Show/hide profile settings button
+                    if (targetScreen === 'profileScreen') {
+                        profileSettingsBtn.style.display = 'block';
+                    } else {
+                        profileSettingsBtn.style.display = 'none';
+                    }
                 });
+            });
+
+            // Profile settings button
+            profileSettingsBtn.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                document.querySelector('.nav-item[data-screen="profileScreen"]').classList.add('active');
+                screens.forEach(screen => screen.classList.remove('active'));
+                document.getElementById('settingsScreen').classList.add('active');
             });
 
             // Settings button
@@ -3586,7 +3856,10 @@
 
             // Edit Profile button
             editProfileBtn.addEventListener('click', () => {
-                document.getElementById('editUsername').value = appState.currentUser.name;
+                document.getElementById('editDisplayName').value = appState.currentUser.name;
+                document.getElementById('editUsername').value = appState.currentUser.username;
+                document.getElementById('editGender').value = appState.currentUser.gender;
+                document.getElementById('editPronoun').value = appState.currentUser.pronoun;
                 document.getElementById('editBio').value = appState.currentUser.bio;
                 document.getElementById('editProfileScreen').classList.add('active');
             });
@@ -3869,6 +4142,7 @@
                                 type: "follow",
                                 userId: appState.currentUser.id,
                                 userName: appState.currentUser.name,
+                                userUsername: appState.currentUser.username,
                                 pollId: null,
                                 pollQuestion: null,
                                 commentId: null,
@@ -3983,7 +4257,6 @@
                     if (dropdownItem.classList.contains('delete')) {
                         if (confirm('Are you sure you want to delete this?')) {
                             // In a real app, this would make an API call
-                            alert('Content deleted successfully');
                             // Remove the element from DOM
                             parentElement.remove();
                         }
@@ -4207,6 +4480,7 @@
                         type: "like",
                         userId: appState.currentUser.id,
                         userName: appState.currentUser.name,
+                        userUsername: appState.currentUser.username,
                         pollId: poll.id,
                         pollQuestion: poll.question,
                         commentId: null,
@@ -4350,8 +4624,9 @@
                 pollId: pollId,
                 userId: appState.currentUser.id,
                 userName: appState.currentUser.name,
+                userUsername: appState.currentUser.username,
                 userProfilePic: appState.currentUser.profilePic,
-                text: appState.currentReplyingTo ? `@${appState.currentReplyingTo.userName} ${commentText}` : commentText,
+                text: appState.currentReplyingTo ? commentText : commentText,
                 likes: 0,
                 timestamp: "Just now",
                 userLiked: false,
@@ -4371,6 +4646,7 @@
                             type: "reply",
                             userId: appState.currentUser.id,
                             userName: appState.currentUser.name,
+                            userUsername: appState.currentUser.username,
                             pollId: pollId,
                             pollQuestion: document.getElementById('commentPollQuestion').textContent,
                             commentId: parentComment.id,
@@ -4405,6 +4681,7 @@
                         type: "comment",
                         userId: appState.currentUser.id,
                         userName: appState.currentUser.name,
+                        userUsername: appState.currentUser.username,
                         pollId: pollId,
                         pollQuestion: poll.question,
                         commentId: newComment.id,
@@ -4578,6 +4855,7 @@
                 id: appState.nextPollId++,
                 userId: appState.currentUser.id,
                 userName: appState.currentUser.name,
+                userUsername: appState.currentUser.username,
                 userProfilePic: appState.currentUser.profilePic,
                 question: question,
                 options: options.map((text, index) => ({
@@ -4630,21 +4908,27 @@
             document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
             document.getElementById('homeScreen').classList.add('active');
             
-            alert('Poll created successfully!');
+            // No popup alert - just post silently
         }
 
         // Save profile
         function saveProfile() {
+            const displayName = document.getElementById('editDisplayName').value.trim();
             const username = document.getElementById('editUsername').value.trim();
+            const gender = document.getElementById('editGender').value;
+            const pronoun = document.getElementById('editPronoun').value;
             const bio = document.getElementById('editBio').value.trim();
             
-            if (!username) {
-                alert('Please enter a username');
+            if (!displayName || !username) {
+                alert('Please enter both display name and username');
                 return;
             }
             
             // Update current user
-            appState.currentUser.name = username;
+            appState.currentUser.name = displayName;
+            appState.currentUser.username = username;
+            appState.currentUser.gender = gender;
+            appState.currentUser.pronoun = pronoun;
             appState.currentUser.bio = bio;
             
             // Update profile picture if changed
@@ -4655,19 +4939,22 @@
             
             // Update user's polls
             appState.userPolls.forEach(poll => {
-                poll.userName = username;
+                poll.userName = displayName;
+                poll.userUsername = username;
                 poll.userProfilePic = appState.currentUser.profilePic;
             });
             
             // Update polls where current user has commented
             appState.comments.forEach(comment => {
                 if (comment.userId === appState.currentUser.id) {
-                    comment.userName = username;
+                    comment.userName = displayName;
+                    comment.userUsername = username;
                     comment.userProfilePic = appState.currentUser.profilePic;
                 }
                 comment.replies.forEach(reply => {
                     if (reply.userId === appState.currentUser.id) {
-                        reply.userName = username;
+                        reply.userName = displayName;
+                        reply.userUsername = username;
                         reply.userProfilePic = appState.currentUser.profilePic;
                     }
                 });
@@ -4701,7 +4988,7 @@
                 replyingToText.innerHTML = `Replying to <strong>${userName}</strong>`;
                 replyingTo.style.display = 'flex';
                 commentInput.focus();
-                commentInput.value = `@${userName} `;
+                commentInput.value = '';
             }
         });
 
@@ -4746,6 +5033,7 @@
                             type: "like_comment",
                             userId: appState.currentUser.id,
                             userName: appState.currentUser.name,
+                            userUsername: appState.currentUser.username,
                             pollId: comment.pollId,
                             pollQuestion: poll.question,
                             commentId: commentId,
