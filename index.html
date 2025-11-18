@@ -81,33 +81,6 @@
             color: var(--dark-accent);
         }
 
-        .theme-toggle {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: var(--light-text);
-            padding: 8px;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--light-elements);
-        }
-
-        .dark-mode .theme-toggle {
-            color: var(--dark-text);
-        }
-
-        .dark-mode .theme-toggle:hover {
-            background-color: var(--dark-elements);
-        }
-
         /* Navigation */
         .bottom-nav {
             position: fixed;
@@ -533,6 +506,7 @@
             transition: var(--transition);
             position: relative;
             border: 1px solid var(--light-border);
+            text-align: center;
         }
 
         .dark-mode .profile-card {
@@ -542,7 +516,8 @@
 
         .profile-header {
             display: flex;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 20px;
         }
 
@@ -554,7 +529,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 20px;
+            margin-bottom: 20px;
             overflow: hidden;
             cursor: pointer;
             border: 3px solid var(--light-border);
@@ -577,7 +552,7 @@
         }
 
         .profile-info {
-            flex: 1;
+            width: 100%;
         }
 
         .profile-name {
@@ -589,6 +564,7 @@
 
         .profile-stats {
             display: flex;
+            justify-content: center;
             margin-bottom: 12px;
             gap: 20px;
         }
@@ -623,11 +599,10 @@
         }
 
         .profile-actions {
-            position: absolute;
-            top: 24px;
-            right: 24px;
             display: flex;
-            gap: 8px;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
         }
 
         .profile-action-btn {
@@ -657,6 +632,66 @@
 
         .dark-mode .profile-action-btn:hover {
             background-color: var(--dark-elements);
+        }
+
+        .profile-user-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .follow-btn, .chat-btn {
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .follow-btn {
+            background-color: var(--light-accent);
+            color: white;
+        }
+
+        .follow-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .dark-mode .follow-btn {
+            background-color: var(--dark-accent);
+        }
+
+        .follow-btn.following {
+            background-color: var(--light-elements);
+            color: var(--light-text);
+        }
+
+        .dark-mode .follow-btn.following {
+            background-color: var(--dark-elements);
+            color: var(--dark-text);
+        }
+
+        .chat-btn {
+            background-color: var(--light-elements);
+            color: var(--light-text);
+        }
+
+        .chat-btn:hover {
+            background-color: var(--light-border);
+            transform: translateY(-2px);
+        }
+
+        .dark-mode .chat-btn {
+            background-color: var(--dark-elements);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .chat-btn:hover {
+            background-color: var(--dark-border);
         }
 
         /* Profile Tabs */
@@ -1985,6 +2020,41 @@
             color: var(--dark-text);
         }
 
+        /* Settings Modals */
+        .settings-modal-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--light-border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .settings-modal-option:hover {
+            background-color: var(--light-elements);
+        }
+
+        .dark-mode .settings-modal-option {
+            border-bottom-color: var(--dark-border);
+        }
+
+        .dark-mode .settings-modal-option:hover {
+            background-color: var(--dark-elements);
+        }
+
+        .settings-modal-option.active {
+            color: var(--light-accent);
+        }
+
+        .dark-mode .settings-modal-option.active {
+            color: var(--dark-accent);
+        }
+
+        .settings-modal-option i {
+            font-size: 1.2rem;
+        }
+
         /* Utility Classes */
         .hidden {
             display: none;
@@ -2104,9 +2174,6 @@
     <!-- App Header -->
     <header class="app-header">
         <h1 class="app-name">PollSocial</h1>
-        <button class="theme-toggle" id="themeToggle">
-            <i class="fas fa-moon"></i>
-        </button>
     </header>
 
     <!-- Home Screen -->
@@ -2125,6 +2192,11 @@
                 <input type="text" id="pollQuestion" class="form-input" placeholder="Ask something...">
             </div>
             <div class="form-group">
+                <label class="form-label" for="pollImage">Add Image (Optional)</label>
+                <input type="file" id="pollImage" class="form-input" accept="image/*">
+                <img id="pollImagePreview" class="image-preview" alt="Poll image preview">
+            </div>
+            <div class="form-group">
                 <label class="form-label">Poll Options</label>
                 <div id="pollOptionsContainer">
                     <div class="poll-option-input">
@@ -2139,11 +2211,6 @@
                 <button class="add-option" id="addOption">
                     <i class="fas fa-plus"></i> Add Option
                 </button>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="pollImage">Add Image (Optional)</label>
-                <input type="file" id="pollImage" class="form-input" accept="image/*">
-                <img id="pollImagePreview" class="image-preview" alt="Poll image preview">
             </div>
             <button class="post-poll-btn" id="postPoll">Post Poll</button>
         </div>
@@ -2241,6 +2308,62 @@
         </div>
     </section>
 
+    <!-- User Profile Screen -->
+    <section id="userProfileScreen" class="screen">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-pic-large" id="userProfilePicLarge">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="userProfileName">User Name</div>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="userFollowers">0</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="userImpressions">0</div>
+                            <div class="stat-label">Impressions</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="userLikes">0</div>
+                            <div class="stat-label">Likes</div>
+                        </div>
+                    </div>
+                    <div class="profile-bio" id="userProfileBio">
+                        User bio will appear here.
+                    </div>
+                </div>
+            </div>
+            <div class="profile-user-actions">
+                <button class="follow-btn" id="followUserBtn">Follow</button>
+                <button class="chat-btn" id="chatUserBtn">Chat</button>
+            </div>
+        </div>
+
+        <!-- Profile Tabs -->
+        <div class="profile-tabs">
+            <div class="profile-tab active" data-tab="userPolls">Polls</div>
+            <div class="profile-tab" data-tab="userComments">Comments</div>
+        </div>
+
+        <!-- Polls Tab Content -->
+        <div class="tab-content active" id="userPollsTab">
+            <div id="otherUserPollsContainer">
+                <!-- User's polls will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Comments Tab Content -->
+        <div class="tab-content" id="userCommentsTab">
+            <h3 class="section-title">Recent Comments</h3>
+            <div id="otherUserCommentsContainer">
+                <!-- User's comments will be dynamically added here -->
+            </div>
+        </div>
+    </section>
+
     <!-- Settings Screen -->
     <section id="settingsScreen" class="screen">
         <div class="settings-section">
@@ -2271,7 +2394,7 @@
                         <i class="settings-icon fas fa-lock"></i>
                         Privacy Settings
                     </div>
-                    <div class="settings-value">Public</div>
+                    <div class="settings-value" id="privacyValue">Public</div>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </div>
@@ -2295,7 +2418,7 @@
                         <i class="settings-icon fas fa-bell"></i>
                         Notifications
                     </div>
-                    <div class="settings-value">Enabled</div>
+                    <div class="settings-value" id="notificationValue">Enabled</div>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </div>
@@ -2427,6 +2550,86 @@
         </div>
     </div>
 
+    <!-- Settings Modals -->
+    <div class="modal" id="privacySettingsModal">
+        <div class="modal-content">
+            <div class="modal-title">Privacy Settings</div>
+            <div class="settings-modal-option" data-value="public">
+                <div>
+                    <div class="settings-label">Public</div>
+                    <div class="settings-value">Anyone can see your profile and polls</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="settings-modal-option" data-value="private">
+                <div>
+                    <div class="settings-label">Private</div>
+                    <div class="settings-value">Only followers can see your content</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" id="cancelPrivacy">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="savePrivacy">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="themeSettingsModal">
+        <div class="modal-content">
+            <div class="modal-title">Theme Settings</div>
+            <div class="settings-modal-option" data-value="light">
+                <div>
+                    <div class="settings-label">Light</div>
+                    <div class="settings-value">Always use light theme</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="settings-modal-option" data-value="dark">
+                <div>
+                    <div class="settings-label">Dark</div>
+                    <div class="settings-value">Always use dark theme</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="settings-modal-option" data-value="auto">
+                <div>
+                    <div class="settings-label">Auto</div>
+                    <div class="settings-value">Follow system theme</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" id="cancelTheme">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveTheme">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="notificationSettingsModal">
+        <div class="modal-content">
+            <div class="modal-title">Notification Settings</div>
+            <div class="settings-modal-option" data-value="enabled">
+                <div>
+                    <div class="settings-label">Enabled</div>
+                    <div class="settings-value">Receive all notifications</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="settings-modal-option" data-value="disabled">
+                <div>
+                    <div class="settings-label">Disabled</div>
+                    <div class="settings-value">No notifications</div>
+                </div>
+                <i class="fas fa-check" style="display: none;"></i>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" id="cancelNotifications">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveNotifications">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <div class="nav-item active" data-screen="homeScreen">
@@ -2464,13 +2667,76 @@
                 likes: 356,
                 loginMethod: "google",
                 privacy: "public",
-                theme: "auto"
+                theme: "auto",
+                notifications: "enabled"
             },
+            dummyUsers: [
+                {
+                    id: 2,
+                    name: "Shikhar Dixit",
+                    bio: "Tech enthusiast and poll creator. Love discussing new technologies and trends.",
+                    profilePic: null,
+                    followers: 850,
+                    impressions: 12000,
+                    likes: 210,
+                    isFollowing: false
+                },
+                {
+                    id: 3,
+                    name: "Cosmicpoll",
+                    bio: "Creating polls about space, science, and the universe. Ask me anything about cosmos!",
+                    profilePic: null,
+                    followers: 3200,
+                    impressions: 45000,
+                    likes: 890,
+                    isFollowing: true
+                },
+                {
+                    id: 4,
+                    name: "Nishkarsh Mishra",
+                    bio: "Developer and content creator. Passionate about open source and community building.",
+                    profilePic: null,
+                    followers: 1500,
+                    impressions: 28000,
+                    likes: 420,
+                    isFollowing: false
+                },
+                {
+                    id: 5,
+                    name: "Swatantra Singh",
+                    bio: "Digital marketer and social media strategist. Love analyzing trends and user behavior.",
+                    profilePic: null,
+                    followers: 2100,
+                    impressions: 35000,
+                    likes: 650,
+                    isFollowing: false
+                },
+                {
+                    id: 6,
+                    name: "Vimal Awasthi",
+                    bio: "UI/UX designer focused on creating beautiful and functional interfaces.",
+                    profilePic: null,
+                    followers: 1800,
+                    impressions: 32000,
+                    likes: 540,
+                    isFollowing: true
+                },
+                {
+                    id: 7,
+                    name: "Shubham Dey",
+                    bio: "Full-stack developer and tech blogger. Sharing knowledge and building cool stuff.",
+                    profilePic: null,
+                    followers: 950,
+                    impressions: 15000,
+                    likes: 320,
+                    isFollowing: false
+                }
+            ],
             polls: [
                 {
                     id: 1,
                     userId: 2,
-                    userName: "Sarah Johnson",
+                    userName: "Shikhar Dixit",
                     userProfilePic: null,
                     question: "What's your favorite programming language for web development?",
                     options: [
@@ -2492,7 +2758,7 @@
                 {
                     id: 2,
                     userId: 3,
-                    userName: "Alex Chen",
+                    userName: "Cosmicpoll",
                     userProfilePic: null,
                     question: "Which social media platform do you use most frequently?",
                     options: [
@@ -2514,7 +2780,7 @@
                 {
                     id: 3,
                     userId: 4,
-                    userName: "Maria Rodriguez",
+                    userName: "Nishkarsh Mishra",
                     userProfilePic: null,
                     question: "What's your preferred method for staying productive?",
                     options: [
@@ -2563,7 +2829,7 @@
                     id: 1,
                     pollId: 1,
                     userId: 3,
-                    userName: "Alex Chen",
+                    userName: "Cosmicpoll",
                     userProfilePic: null,
                     text: "I'm a big fan of TypeScript - the type safety has saved me so many times!",
                     likes: 5,
@@ -2574,9 +2840,9 @@
                             id: 2,
                             pollId: 1,
                             userId: 2,
-                            userName: "Sarah Johnson",
+                            userName: "Shikhar Dixit",
                             userProfilePic: null,
-                            text: "@Alex Chen Completely agree! The developer experience is so much better with TypeScript.",
+                            text: "@Cosmicpoll Completely agree! The developer experience is so much better with TypeScript.",
                             likes: 2,
                             timestamp: "1h",
                             userLiked: false,
@@ -2587,7 +2853,7 @@
                                     userId: 1,
                                     userName: "Jordan Taylor",
                                     userProfilePic: null,
-                                    text: "@Sarah Johnson I've been meaning to learn TypeScript. Any good resources?",
+                                    text: "@Shikhar Dixit I've been meaning to learn TypeScript. Any good resources?",
                                     likes: 1,
                                     timestamp: "30m",
                                     userLiked: false,
@@ -2601,7 +2867,7 @@
                     id: 3,
                     pollId: 1,
                     userId: 4,
-                    userName: "Maria Rodriguez",
+                    userName: "Nishkarsh Mishra",
                     userProfilePic: null,
                     text: "Python with Django for backend, JavaScript/React for frontend is my perfect stack.",
                     likes: 3,
@@ -2625,7 +2891,7 @@
             messageUsers: [
                 {
                     id: 2,
-                    name: "Sarah Johnson",
+                    name: "Shikhar Dixit",
                     profilePic: null,
                     status: "Online",
                     lastSeen: "2 min ago",
@@ -2652,7 +2918,7 @@
                 },
                 {
                     id: 3,
-                    name: "Alex Chen",
+                    name: "Cosmicpoll",
                     profilePic: null,
                     status: "Offline",
                     lastSeen: "1 hour ago",
@@ -2673,7 +2939,7 @@
                 },
                 {
                     id: 4,
-                    name: "Maria Rodriguez",
+                    name: "Nishkarsh Mishra",
                     profilePic: null,
                     status: "Online",
                     lastSeen: "Just now",
@@ -2692,7 +2958,7 @@
                     id: 1,
                     type: "like",
                     userId: 3,
-                    userName: "Alex Chen",
+                    userName: "Cosmicpoll",
                     pollId: 4,
                     pollQuestion: "What's your go-to design tool in 2023?",
                     commentId: null,
@@ -2703,7 +2969,7 @@
                     id: 2,
                     type: "comment",
                     userId: 2,
-                    userName: "Sarah Johnson",
+                    userName: "Shikhar Dixit",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 1,
@@ -2714,7 +2980,7 @@
                     id: 3,
                     type: "reply",
                     userId: 2,
-                    userName: "Sarah Johnson",
+                    userName: "Shikhar Dixit",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 2,
@@ -2725,7 +2991,7 @@
                     id: 4,
                     type: "like_comment",
                     userId: 4,
-                    userName: "Maria Rodriguez",
+                    userName: "Nishkarsh Mishra",
                     pollId: 1,
                     pollQuestion: "What's your favorite programming language for web development?",
                     commentId: 4,
@@ -2736,7 +3002,7 @@
                     id: 5,
                     type: "follow",
                     userId: 5,
-                    userName: "Jamie Smith",
+                    userName: "Swatantra Singh",
                     pollId: null,
                     pollQuestion: null,
                     commentId: null,
@@ -2749,24 +3015,37 @@
             nextNotificationId: 6,
             nextMessageId: 4,
             currentReplyingTo: null,
-            activeDropdown: null
+            activeDropdown: null,
+            currentViewingUser: null
         };
 
         // DOM Elements
         const pollsContainer = document.getElementById('pollsContainer');
         const userPollsContainer = document.getElementById('userPollsContainer');
         const userCommentsContainer = document.getElementById('userCommentsContainer');
+        const otherUserPollsContainer = document.getElementById('otherUserPollsContainer');
+        const otherUserCommentsContainer = document.getElementById('otherUserCommentsContainer');
         const commentsList = document.getElementById('commentsList');
         const commentPollQuestion = document.getElementById('commentPollQuestion');
         const commentInput = document.getElementById('commentInput');
         const profilePicLarge = document.getElementById('profilePicLarge');
         const profileName = document.getElementById('profileName');
         const profileBio = document.getElementById('profileBio');
+        const userProfilePicLarge = document.getElementById('userProfilePicLarge');
+        const userProfileName = document.getElementById('userProfileName');
+        const userProfileBio = document.getElementById('userProfileBio');
+        const userFollowers = document.getElementById('userFollowers');
+        const userImpressions = document.getElementById('userImpressions');
+        const userLikes = document.getElementById('userLikes');
+        const followUserBtn = document.getElementById('followUserBtn');
+        const chatUserBtn = document.getElementById('chatUserBtn');
         const profilePicPreview = document.getElementById('profilePicPreview');
         const profilePicInput = document.getElementById('profilePicInput');
         const pollImagePreview = document.getElementById('pollImagePreview');
         const loginMethodValue = document.getElementById('loginMethodValue');
         const themeValue = document.getElementById('themeValue');
+        const privacyValue = document.getElementById('privacyValue');
+        const notificationValue = document.getElementById('notificationValue');
         const settingsBtn = document.getElementById('settingsBtn');
         const editProfileBtn = document.getElementById('editProfileBtn');
         const messageUserList = document.getElementById('messageUserList');
@@ -2783,6 +3062,9 @@
         const reportModal = document.getElementById('reportModal');
         const cancelReport = document.getElementById('cancelReport');
         const submitReport = document.getElementById('submitReport');
+        const privacySettingsModal = document.getElementById('privacySettingsModal');
+        const themeSettingsModal = document.getElementById('themeSettingsModal');
+        const notificationSettingsModal = document.getElementById('notificationSettingsModal');
 
         // Initialize the app
         function initApp() {
@@ -2794,6 +3076,23 @@
             updateProfileDisplay();
             updateSettingsDisplay();
             setupEventListeners();
+            applyTheme();
+        }
+
+        // Apply theme based on user preference
+        function applyTheme() {
+            if (appState.currentUser.theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else if (appState.currentUser.theme === 'light') {
+                document.body.classList.remove('dark-mode');
+            } else {
+                // Auto mode - follow system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
         }
 
         // Render polls to the home screen
@@ -2810,7 +3109,12 @@
                 return;
             }
             
-            appState.polls.forEach(poll => {
+            // Sort polls by timestamp (newest first)
+            const sortedPolls = [...appState.polls].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            sortedPolls.forEach(poll => {
                 const pollElement = createPollElement(poll);
                 pollsContainer.appendChild(pollElement);
             });
@@ -2830,9 +3134,41 @@
                 return;
             }
             
-            appState.userPolls.forEach(poll => {
+            // Sort user polls by timestamp (newest first)
+            const sortedPolls = [...appState.userPolls].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            sortedPolls.forEach(poll => {
                 const pollElement = createPollElement(poll);
                 userPollsContainer.appendChild(pollElement);
+            });
+        }
+
+        // Render other user's polls
+        function renderOtherUserPolls(userId) {
+            otherUserPollsContainer.innerHTML = '';
+            
+            const userPolls = appState.polls.filter(poll => poll.userId === userId);
+            
+            if (userPolls.length === 0) {
+                otherUserPollsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-poll"></i>
+                        <p>This user hasn't created any polls yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort polls by timestamp (newest first)
+            const sortedPolls = [...userPolls].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            sortedPolls.forEach(poll => {
+                const pollElement = createPollElement(poll);
+                otherUserPollsContainer.appendChild(pollElement);
             });
         }
 
@@ -2852,13 +3188,50 @@
                 return;
             }
             
-            userComments.forEach(comment => {
+            // Sort comments by timestamp (newest first)
+            const sortedComments = [...userComments].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            sortedComments.forEach(comment => {
                 const poll = appState.polls.find(p => p.id === comment.pollId) || 
                             appState.userPolls.find(p => p.id === comment.pollId);
                 
                 if (poll) {
                     const commentElement = createUserCommentElement(comment, poll);
                     userCommentsContainer.appendChild(commentElement);
+                }
+            });
+        }
+
+        // Render other user's comments
+        function renderOtherUserComments(userId) {
+            otherUserCommentsContainer.innerHTML = '';
+            
+            const userComments = getAllUserComments(userId);
+            
+            if (userComments.length === 0) {
+                otherUserCommentsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-comments"></i>
+                        <p>This user hasn't commented on any polls yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort comments by timestamp (newest first)
+            const sortedComments = [...userComments].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            sortedComments.forEach(comment => {
+                const poll = appState.polls.find(p => p.id === comment.pollId) || 
+                            appState.userPolls.find(p => p.id === comment.pollId);
+                
+                if (poll) {
+                    const commentElement = createUserCommentElement(comment, poll);
+                    otherUserCommentsContainer.appendChild(commentElement);
                 }
             });
         }
@@ -2959,11 +3332,11 @@
             
             pollElement.innerHTML = `
                 <div class="poll-header">
-                    <div class="profile-pic">
+                    <div class="profile-pic" data-user-id="${poll.userId}">
                         ${profilePicContent}
                     </div>
                     <div class="user-info">
-                        <div class="username">${poll.userName}</div>
+                        <div class="username" data-user-id="${poll.userId}">${poll.userName}</div>
                         <div class="timestamp">${poll.timestamp}</div>
                     </div>
                     <button class="poll-menu-btn">
@@ -3083,6 +3456,10 @@
             const notificationElement = document.createElement('div');
             notificationElement.className = 'notification-card';
             notificationElement.dataset.notificationId = notification.id;
+            notificationElement.dataset.type = notification.type;
+            notificationElement.dataset.pollId = notification.pollId;
+            notificationElement.dataset.commentId = notification.commentId;
+            notificationElement.dataset.userId = notification.userId;
             
             let icon = '';
             let text = '';
@@ -3140,26 +3517,41 @@
             }
         }
 
+        // Update user profile display
+        function updateUserProfileDisplay(user) {
+            userProfileName.textContent = user.name;
+            userProfileBio.textContent = user.bio;
+            userFollowers.textContent = user.followers.toLocaleString();
+            userImpressions.textContent = user.impressions.toLocaleString();
+            userLikes.textContent = user.likes.toLocaleString();
+            
+            if (user.profilePic) {
+                userProfilePicLarge.innerHTML = `<img src="${user.profilePic}" alt="${user.name}">`;
+            } else {
+                userProfilePicLarge.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // Update follow button
+            if (user.isFollowing) {
+                followUserBtn.textContent = 'Following';
+                followUserBtn.classList.add('following');
+            } else {
+                followUserBtn.textContent = 'Follow';
+                followUserBtn.classList.remove('following');
+            }
+        }
+
         // Update settings display
         function updateSettingsDisplay() {
             loginMethodValue.textContent = appState.currentUser.loginMethod === 'google' ? 'Google' : 'Phone';
+            privacyValue.textContent = appState.currentUser.privacy === 'public' ? 'Public' : 'Private';
             themeValue.textContent = appState.currentUser.theme === 'auto' ? 'Auto' : 
                                    appState.currentUser.theme === 'light' ? 'Light' : 'Dark';
+            notificationValue.textContent = appState.currentUser.notifications === 'enabled' ? 'Enabled' : 'Disabled';
         }
 
         // Setup event listeners
         function setupEventListeners() {
-            // Theme Toggle
-            const themeToggle = document.getElementById('themeToggle');
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-mode');
-                if (document.body.classList.contains('dark-mode')) {
-                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                } else {
-                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                }
-            });
-
             // Navigation
             const navItems = document.querySelectorAll('.nav-item');
             const screens = document.querySelectorAll('.screen');
@@ -3213,6 +3605,24 @@
                     
                     // Show target tab content
                     tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${targetTab}Tab`).classList.add('active');
+                });
+            });
+
+            // User Profile Tabs
+            const userProfileTabs = document.querySelectorAll('#userProfileScreen .profile-tab');
+            const userTabContents = document.querySelectorAll('#userProfileScreen .tab-content');
+
+            userProfileTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetTab = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    userProfileTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show target tab content
+                    userTabContents.forEach(content => content.classList.remove('active'));
                     document.getElementById(`${targetTab}Tab`).classList.add('active');
                 });
             });
@@ -3428,6 +3838,92 @@
                 document.getElementById('custom-report').value = '';
             });
 
+            // Settings Modals
+            const privacySettingsItem = document.getElementById('privacySettingsItem');
+            const themeSettingsItem = document.getElementById('themeSettingsItem');
+            const notificationSettingsItem = document.getElementById('notificationSettingsItem');
+
+            privacySettingsItem.addEventListener('click', () => {
+                openSettingsModal('privacy');
+            });
+
+            themeSettingsItem.addEventListener('click', () => {
+                openSettingsModal('theme');
+            });
+
+            notificationSettingsItem.addEventListener('click', () => {
+                openSettingsModal('notification');
+            });
+
+            // Follow User
+            followUserBtn.addEventListener('click', () => {
+                if (appState.currentViewingUser) {
+                    const user = appState.dummyUsers.find(u => u.id === appState.currentViewingUser.id);
+                    if (user) {
+                        user.isFollowing = !user.isFollowing;
+                        if (user.isFollowing) {
+                            user.followers += 1;
+                            // Add follow notification
+                            const newNotification = {
+                                id: appState.nextNotificationId++,
+                                type: "follow",
+                                userId: appState.currentUser.id,
+                                userName: appState.currentUser.name,
+                                pollId: null,
+                                pollQuestion: null,
+                                commentId: null,
+                                timestamp: "Just now",
+                                read: false
+                            };
+                            appState.notifications.unshift(newNotification);
+                            renderNotifications();
+                        } else {
+                            user.followers -= 1;
+                        }
+                        updateUserProfileDisplay(user);
+                    }
+                }
+            });
+
+            // Chat User
+            chatUserBtn.addEventListener('click', () => {
+                if (appState.currentViewingUser) {
+                    // Navigate to messages screen
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    document.querySelector('.nav-item[data-screen="messagesScreen"]').classList.add('active');
+                    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                    document.getElementById('messagesScreen').classList.add('active');
+                    
+                    // Open chat with this user
+                    openMessageThread(appState.currentViewingUser.id);
+                }
+            });
+
+            // User profile clicks
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.username') || e.target.closest('.profile-pic')) {
+                    const element = e.target.closest('.username') || e.target.closest('.profile-pic');
+                    const userId = parseInt(element.dataset.userId);
+                    
+                    if (userId !== appState.currentUser.id) {
+                        openUserProfile(userId);
+                    }
+                }
+            });
+
+            // Notification clicks
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-card')) {
+                    const notificationElement = e.target.closest('.notification-card');
+                    const type = notificationElement.dataset.type;
+                    const pollId = parseInt(notificationElement.dataset.pollId);
+                    const commentId = parseInt(notificationElement.dataset.commentId);
+                    const userId = parseInt(notificationElement.dataset.userId);
+                    
+                    handleNotificationClick(type, pollId, commentId, userId);
+                }
+            });
+
             // Three-dot menu functionality
             document.addEventListener('click', (e) => {
                 // Handle poll menu button clicks
@@ -3516,6 +4012,128 @@
                 dropdown.style.display = 'none';
             });
             appState.activeDropdown = null;
+        }
+
+        // Open settings modal
+        function openSettingsModal(type) {
+            let modal;
+            let currentValue;
+            
+            switch (type) {
+                case 'privacy':
+                    modal = privacySettingsModal;
+                    currentValue = appState.currentUser.privacy;
+                    break;
+                case 'theme':
+                    modal = themeSettingsModal;
+                    currentValue = appState.currentUser.theme;
+                    break;
+                case 'notification':
+                    modal = notificationSettingsModal;
+                    currentValue = appState.currentUser.notifications;
+                    break;
+            }
+            
+            // Reset all checkmarks
+            modal.querySelectorAll('.settings-modal-option i').forEach(icon => {
+                icon.style.display = 'none';
+            });
+            
+            // Set checkmark for current value
+            const currentOption = modal.querySelector(`.settings-modal-option[data-value="${currentValue}"]`);
+            if (currentOption) {
+                currentOption.querySelector('i').style.display = 'block';
+            }
+            
+            // Add click handlers for options
+            modal.querySelectorAll('.settings-modal-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove checkmark from all options
+                    modal.querySelectorAll('.settings-modal-option i').forEach(icon => {
+                        icon.style.display = 'none';
+                    });
+                    
+                    // Add checkmark to selected option
+                    option.querySelector('i').style.display = 'block';
+                });
+            });
+            
+            // Add save handler
+            const saveButton = modal.querySelector('.modal-btn-primary');
+            saveButton.onclick = () => {
+                const selectedOption = modal.querySelector('.settings-modal-option i[style*="block"]');
+                if (selectedOption) {
+                    const selectedValue = selectedOption.closest('.settings-modal-option').dataset.value;
+                    
+                    switch (type) {
+                        case 'privacy':
+                            appState.currentUser.privacy = selectedValue;
+                            break;
+                        case 'theme':
+                            appState.currentUser.theme = selectedValue;
+                            applyTheme();
+                            break;
+                        case 'notification':
+                            appState.currentUser.notifications = selectedValue;
+                            break;
+                    }
+                    
+                    updateSettingsDisplay();
+                    modal.classList.remove('active');
+                }
+            };
+            
+            // Add cancel handler
+            const cancelButton = modal.querySelector('.modal-btn-secondary');
+            cancelButton.onclick = () => {
+                modal.classList.remove('active');
+            };
+            
+            modal.classList.add('active');
+        }
+
+        // Open user profile
+        function openUserProfile(userId) {
+            const user = appState.dummyUsers.find(u => u.id === userId);
+            if (user) {
+                appState.currentViewingUser = user;
+                updateUserProfileDisplay(user);
+                renderOtherUserPolls(userId);
+                renderOtherUserComments(userId);
+                
+                // Navigate to user profile screen
+                document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                document.getElementById('userProfileScreen').classList.add('active');
+            }
+        }
+
+        // Handle notification click
+        function handleNotificationClick(type, pollId, commentId, userId) {
+            switch (type) {
+                case 'like':
+                case 'comment':
+                    // Navigate to the poll
+                    openComments(pollId);
+                    break;
+                case 'reply':
+                case 'like_comment':
+                    // Navigate to the poll and highlight the comment
+                    openComments(pollId);
+                    // In a real app, you would scroll to and highlight the specific comment
+                    break;
+                case 'follow':
+                    // Navigate to the user's profile
+                    openUserProfile(userId);
+                    break;
+            }
+            
+            // Mark notification as read
+            const notification = appState.notifications.find(n => 
+                n.type === type && n.pollId === pollId && n.commentId === commentId && n.userId === userId
+            );
+            if (notification) {
+                notification.read = true;
+            }
         }
 
         // Vote on a poll
@@ -3681,11 +4299,11 @@
             const isOwnComment = comment.userId === appState.currentUser.id;
             
             commentElement.innerHTML = `
-                <div class="profile-pic">
+                <div class="profile-pic" data-user-id="${comment.userId}">
                     ${profilePicContent}
                 </div>
                 <div class="comment-content">
-                    <div class="comment-user">${comment.userName}</div>
+                    <div class="comment-user" data-user-id="${comment.userId}">${comment.userName}</div>
                     <div class="comment-text">${comment.text}</div>
                     <div class="comment-actions">
                         <div class="comment-action">${comment.timestamp}</div>
