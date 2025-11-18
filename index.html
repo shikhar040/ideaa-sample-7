@@ -413,6 +413,7 @@
             border-radius: var(--radius);
             transition: var(--transition);
             font-weight: 500;
+            position: relative;
         }
 
         .engagement-item:hover {
@@ -435,6 +436,54 @@
         .engagement-icon {
             margin-right: 6px;
             font-size: 1.1rem;
+        }
+
+        /* Emoji Reactions */
+        .emoji-reactions {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--light-card);
+            border-radius: 30px;
+            padding: 8px 12px;
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 10;
+            border: 1px solid var(--light-border);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dark-mode .emoji-reactions {
+            background-color: var(--dark-card);
+            border-color: var(--dark-border);
+        }
+
+        .emoji-reaction {
+            font-size: 1.5rem;
+            margin: 0 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .emoji-reaction:hover {
+            transform: scale(1.3);
+        }
+
+        .reaction-display {
+            display: flex;
+            align-items: center;
+        }
+
+        .selected-reaction {
+            font-size: 1.2rem;
+            margin-right: 4px;
+        }
+
+        .reaction-count {
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
         /* Three-dot menu for polls */
@@ -2940,14 +2989,21 @@
                         { id: 4, text: "Other", votes: 12, percentage: 12 }
                     ],
                     image: null,
-                    likes: 24,
+                    totalReactions: 24,
                     comments: 8,
                     shares: 3,
                     impressions: 1250,
                     timestamp: "2 hours ago",
                     userVoted: false,
                     userVoteOption: null,
-                    userLiked: false
+                    userReaction: null,
+                    reactions: {
+                        "😂": 5,
+                        "😢": 3,
+                        "❤️": 10,
+                        "😠": 2,
+                        "😄": 4
+                    }
                 },
                 {
                     id: 2,
@@ -2963,14 +3019,21 @@
                         { id: 4, text: "Facebook", votes: 15, percentage: 15 }
                     ],
                     image: null,
-                    likes: 42,
+                    totalReactions: 42,
                     comments: 15,
                     shares: 7,
                     impressions: 890,
                     timestamp: "5 hours ago",
                     userVoted: false,
                     userVoteOption: null,
-                    userLiked: false
+                    userReaction: "❤️",
+                    reactions: {
+                        "😂": 8,
+                        "😢": 2,
+                        "❤️": 25,
+                        "😠": 1,
+                        "😄": 6
+                    }
                 },
                 {
                     id: 3,
@@ -2986,14 +3049,21 @@
                         { id: 4, text: "No specific method", votes: 15, percentage: 15 }
                     ],
                     image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-                    likes: 31,
+                    totalReactions: 31,
                     comments: 12,
                     shares: 5,
                     impressions: 2100,
                     timestamp: "1 day ago",
                     userVoted: false,
                     userVoteOption: null,
-                    userLiked: false
+                    userReaction: null,
+                    reactions: {
+                        "😂": 3,
+                        "😢": 1,
+                        "❤️": 20,
+                        "😠": 2,
+                        "😄": 5
+                    }
                 }
             ],
             userPolls: [
@@ -3011,14 +3081,21 @@
                         { id: 4, text: "Other", votes: 5, percentage: 5 }
                     ],
                     image: null,
-                    likes: 42,
+                    totalReactions: 42,
                     comments: 18,
                     shares: 7,
                     impressions: 3200,
                     timestamp: "3 hours ago",
                     userVoted: false,
                     userVoteOption: null,
-                    userLiked: false
+                    userReaction: "😄",
+                    reactions: {
+                        "😂": 5,
+                        "😢": 2,
+                        "❤️": 20,
+                        "😠": 1,
+                        "😄": 14
+                    }
                 }
             ],
             comments: [
@@ -3161,7 +3238,7 @@
             notifications: [
                 {
                     id: 1,
-                    type: "like",
+                    type: "reaction",
                     userId: 3,
                     userName: "Cosmicpoll",
                     userUsername: "cosmicpoll",
@@ -3169,7 +3246,8 @@
                     pollQuestion: "What's your go-to design tool in 2023?",
                     commentId: null,
                     timestamp: "10 minutes ago",
-                    read: false
+                    read: false,
+                    reaction: "😄"
                 },
                 {
                     id: 2,
@@ -3539,7 +3617,26 @@
                 `;
             });
             
-            const likeClass = poll.userLiked ? 'fas fa-heart active' : 'far fa-heart';
+            // Determine reaction display
+            let reactionDisplay = '';
+            let totalReactions = Object.values(poll.reactions).reduce((sum, count) => sum + count, 0);
+            
+            if (poll.userReaction) {
+                reactionDisplay = `
+                    <div class="reaction-display">
+                        <span class="selected-reaction">${poll.userReaction}</span>
+                        <span class="reaction-count">${totalReactions}</span>
+                    </div>
+                `;
+            } else {
+                reactionDisplay = `
+                    <div class="reaction-display">
+                        <i class="engagement-icon far fa-smile"></i>
+                        <span class="reaction-count">${totalReactions}</span>
+                    </div>
+                `;
+            }
+            
             const profilePicContent = poll.userProfilePic ? 
                 `<img src="${poll.userProfilePic}" alt="${poll.userName}">` : 
                 `<i class="fas fa-user"></i>`;
@@ -3588,9 +3685,15 @@
                     ${optionsHTML}
                 </div>
                 <div class="engagement-bar">
-                    <div class="engagement-item like-btn" data-poll-id="${poll.id}">
-                        <i class="engagement-icon ${likeClass}"></i>
-                        <span>${poll.likes}</span>
+                    <div class="engagement-item reaction-btn" data-poll-id="${poll.id}">
+                        ${reactionDisplay}
+                        <div class="emoji-reactions">
+                            <span class="emoji-reaction" data-emoji="😂" title="Laugh">😂</span>
+                            <span class="emoji-reaction" data-emoji="😢" title="Cry">😢</span>
+                            <span class="emoji-reaction" data-emoji="❤️" title="Heart">❤️</span>
+                            <span class="emoji-reaction" data-emoji="😠" title="Anger">😠</span>
+                            <span class="emoji-reaction" data-emoji="😄" title="Joy">😄</span>
+                        </div>
                     </div>
                     <div class="engagement-item comment-btn" data-poll-id="${poll.id}">
                         <i class="engagement-icon far fa-comment"></i>
@@ -3686,9 +3789,9 @@
             let text = '';
             
             switch (notification.type) {
-                case 'like':
-                    icon = 'fas fa-heart';
-                    text = `<strong>${notification.userName}</strong> liked your poll "${notification.pollQuestion}"`;
+                case 'reaction':
+                    icon = 'fas fa-smile';
+                    text = `<strong>${notification.userName}</strong> reacted ${notification.reaction} to your poll "${notification.pollQuestion}"`;
                     break;
                 case 'comment':
                     icon = 'fas fa-comment';
@@ -3911,13 +4014,65 @@
                 }
             });
 
-            // Like functionality
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.like-btn')) {
-                    const likeBtn = e.target.closest('.like-btn');
-                    const pollId = parseInt(likeBtn.dataset.pollId);
+            // Emoji Reaction functionality
+            document.addEventListener('mouseenter', (e) => {
+                if (e.target.closest('.reaction-btn')) {
+                    const reactionBtn = e.target.closest('.reaction-btn');
+                    const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
+                    emojiReactions.style.display = 'block';
+                }
+            }, true);
+
+            document.addEventListener('mouseleave', (e) => {
+                if (e.target.closest('.reaction-btn')) {
+                    const reactionBtn = e.target.closest('.reaction-btn');
+                    const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
                     
-                    toggleLike(pollId);
+                    // Use setTimeout to check if we've actually left the element
+                    setTimeout(() => {
+                        if (!reactionBtn.matches(':hover') && !emojiReactions.matches(':hover')) {
+                            emojiReactions.style.display = 'none';
+                        }
+                    }, 100);
+                }
+            }, true);
+
+            // Mobile touch for emoji reactions
+            let touchTimer;
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.reaction-btn')) {
+                    const reactionBtn = e.target.closest('.reaction-btn');
+                    const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
+                    
+                    // Clear any existing timer
+                    clearTimeout(touchTimer);
+                    
+                    // Show emoji reactions
+                    emojiReactions.style.display = 'block';
+                    
+                    // Set timer to hide after 3 seconds if no interaction
+                    touchTimer = setTimeout(() => {
+                        emojiReactions.style.display = 'none';
+                    }, 3000);
+                }
+            });
+
+            // Select emoji reaction
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.emoji-reaction')) {
+                    const emojiReaction = e.target.closest('.emoji-reaction');
+                    const emoji = emojiReaction.dataset.emoji;
+                    const reactionBtn = emojiReaction.closest('.reaction-btn');
+                    const pollId = parseInt(reactionBtn.dataset.pollId);
+                    
+                    reactToPoll(pollId, emoji);
+                    
+                    // Hide emoji selector
+                    const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
+                    emojiReactions.style.display = 'none';
+                    
+                    // Clear any touch timer
+                    clearTimeout(touchTimer);
                 }
             });
 
@@ -4383,7 +4538,7 @@
         // Handle notification click
         function handleNotificationClick(type, pollId, commentId, userId) {
             switch (type) {
-                case 'like':
+                case 'reaction':
                 case 'comment':
                     // Navigate to the poll
                     openComments(pollId);
@@ -4444,8 +4599,8 @@
             }
         }
 
-        // Toggle like on a poll
-        function toggleLike(pollId) {
+        // React to a poll with emoji
+        function reactToPoll(pollId, emoji) {
             // Find the poll in either the main feed or user's polls
             let poll = appState.polls.find(p => p.id === pollId);
             let isUserPoll = false;
@@ -4457,27 +4612,37 @@
             
             if (!poll) return;
             
-            // Update like state
-            if (poll.userLiked) {
-                poll.likes -= 1;
-                poll.userLiked = false;
+            // If already reacted with this emoji, remove reaction
+            if (poll.userReaction === emoji) {
+                // Decrease count for this emoji
+                poll.reactions[emoji] -= 1;
+                poll.userReaction = null;
                 
-                // Remove like notification
+                // Remove reaction notification
                 const notificationIndex = appState.notifications.findIndex(
-                    n => n.type === 'like' && n.pollId === pollId && n.userId === appState.currentUser.id
+                    n => n.type === 'reaction' && n.pollId === pollId && n.userId === appState.currentUser.id
                 );
                 if (notificationIndex !== -1) {
                     appState.notifications.splice(notificationIndex, 1);
                 }
             } else {
-                poll.likes += 1;
-                poll.userLiked = true;
+                // If user had a previous reaction, decrease its count
+                if (poll.userReaction) {
+                    poll.reactions[poll.userReaction] -= 1;
+                }
                 
-                // Add like notification (if not current user's poll)
+                // Set new reaction and increase its count
+                poll.userReaction = emoji;
+                if (!poll.reactions[emoji]) {
+                    poll.reactions[emoji] = 0;
+                }
+                poll.reactions[emoji] += 1;
+                
+                // Add reaction notification (if not current user's poll)
                 if (poll.userId !== appState.currentUser.id) {
                     const newNotification = {
                         id: appState.nextNotificationId++,
-                        type: "like",
+                        type: "reaction",
                         userId: appState.currentUser.id,
                         userName: appState.currentUser.name,
                         userUsername: appState.currentUser.username,
@@ -4485,12 +4650,16 @@
                         pollQuestion: poll.question,
                         commentId: null,
                         timestamp: "Just now",
-                        read: false
+                        read: false,
+                        reaction: emoji
                     };
                     appState.notifications.unshift(newNotification);
                     renderNotifications();
                 }
             }
+            
+            // Recalculate total reactions
+            poll.totalReactions = Object.values(poll.reactions).reduce((sum, count) => sum + count, 0);
             
             // Re-render the poll
             if (isUserPoll) {
@@ -4865,14 +5034,21 @@
                     percentage: 0
                 })),
                 image: pollImage,
-                likes: 0,
+                totalReactions: 0,
                 comments: 0,
                 shares: 0,
                 impressions: 0,
                 timestamp: "Just now",
                 userVoted: false,
                 userVoteOption: null,
-                userLiked: false
+                userReaction: null,
+                reactions: {
+                    "😂": 0,
+                    "😢": 0,
+                    "❤️": 0,
+                    "😠": 0,
+                    "😄": 0
+                }
             };
             
             // Add to polls and user's polls
