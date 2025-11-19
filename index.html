@@ -5249,6 +5249,9 @@
             // Add to polls and user's polls
             appState.polls.unshift(newPoll);
             appState.userPolls.unshift(newPoll);
+
+            // Persist new poll to localStorage so it survives reloads
+            try { saveDataToStorage(); } catch (e) { console.error('Error saving poll to storage', e); }
             
             // Reset form
             document.getElementById('pollQuestion').value = '';
@@ -5339,6 +5342,9 @@
             renderUserPolls();
             renderUserComments();
             updateProfileDisplay();
+
+            // Persist updated profile to localStorage
+            try { saveDataToStorage(); } catch (e) { console.error('Error saving profile to storage', e); }
         }
 
         // Initialize the app when the page loads
