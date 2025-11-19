@@ -416,6 +416,16 @@
             position: relative;
         }
 
+        .reaction-btn {
+            position: relative;
+            z-index: 10010; /* keep reaction button above neighboring engagement items */
+        }
+
+        /* Ensure comment and share buttons sit below reaction button when emoji popup is visible */
+        .engagement-item.comment-btn, .engagement-item:not(.reaction-btn) {
+            z-index: 1000;
+        }
+
         .engagement-item:hover {
             background-color: var(--light-elements);
             transform: scale(1.05);
@@ -449,9 +459,26 @@
             padding: 8px 12px;
             box-shadow: var(--shadow);
             display: none;
-            z-index: 10;
+            z-index: 9999;
+            pointer-events: auto;
             border: 1px solid var(--light-border);
             animation: fadeIn 0.2s ease;
+            white-space: nowrap;
+            max-width: 90vw;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        /* When comments are open we hide any emoji popups to avoid overlapping UI */
+        .comments-open .emoji-reactions {
+            display: none !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+        }
+
+        .emoji-reactions::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
         }
 
         .dark-mode .emoji-reactions {
@@ -465,10 +492,29 @@
             cursor: pointer;
             transition: var(--transition);
             display: inline-block;
+            flex-shrink: 0;
+            pointer-events: auto;
         }
 
         .emoji-reaction:hover {
             transform: scale(1.3);
+        }
+
+        /* Remove pencil icon from username in profile card */
+        .username-edit {
+            display: none !important;
+        }
+
+        /* Show profile action buttons (edit/settings) in profile card */
+        .profile-actions {
+            display: flex !important;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Enable pencil icon for profile editing */
+        .username-edit-large {
+            display: inline-block !important;
         }
 
         .reaction-display {
@@ -1640,85 +1686,103 @@
             border-left-color: var(--dark-border);
         }
 
-        .comment-input-container {
-            padding: 18px;
-            border-top: 1px solid var(--light-border);
-            display: flex;
-            align-items: center;
-            background-color: var(--light-card);
-            position: relative;
-        }
+/* ---- Composer & reply UX fixes ---- */
 
-        .dark-mode .comment-input-container {
-            border-top-color: var(--dark-border);
-            background-color: var(--dark-card);
-        }
+/* ensure comments list never gets hidden behind composer */
+.comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    padding-bottom: 140px; /* leave room for composer + safe space */
+    transition: padding-bottom 0.2s ease;
+}
 
-        .comment-input {
-            flex: 1;
-            padding: 14px 18px;
-            border-radius: 24px;
-            border: 2px solid var(--light-border);
-            background-color: var(--light-bg);
-            color: #000000;
-            margin-right: 12px;
-            font-weight: 500;
-            min-height: 44px;
-            resize: none;
-        }
+/* keep the composer pinned to bottom inside the full-screen comment view */
+.comment-input-container {
+    position: absolute; /* sits inside .comment-screen (which is fixed) */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 14px;
+    border-top: 1px solid var(--light-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--light-card);
+    z-index: 1100;
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.08);
+}
 
-        .dark-mode .comment-input {
-            border-color: var(--dark-border);
-            background-color: var(--dark-bg);
-            color: #FFFFFF;
-        }
+/* make textarea grow, not be overlapped by send button */
+.comment-input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 24px;
+    border: 2px solid var(--light-border);
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    font-weight: 500;
+    min-height: 48px;
+    max-height: 140px;
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.4;
+}
 
-        .send-comment-btn {
-            background-color: var(--light-accent);
-            color: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
+/* send button keeps fixed size and is visually separated */
+.send-comment-btn {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(74,144,226,0.25);
+    transition: transform 0.12s ease;
+}
 
-        .send-comment-btn:hover {
-            transform: scale(1.1);
-        }
+/* small hover / press feedback */
+.send-comment-btn:active { transform: scale(0.96); }
 
-        .dark-mode .send-comment-btn {
-            background-color: var(--dark-accent);
-        }
+/* Reply indicator (chip) sits above composer inside comment-screen header area */
+.replying-to {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 74px; /* sits above composer (composer height ~56-64) */
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background-color: var(--light-elements);
+    z-index: 1090;
+    font-size: 0.9rem;
+}
 
-        .replying-to {
-            background-color: var(--light-elements);
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            font-size: 0.85rem;
-            color: #65676B;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+/* make cancel red and easy to tap */
+.cancel-reply {
+    background: none;
+    border: none;
+    color: #FF3B30;
+    cursor: pointer;
+    font-weight: 700;
+    margin-left: 12px;
+}
 
-        .dark-mode .replying-to {
-            background-color: var(--dark-elements);
-            color: #A0A0A0;
-        }
-
-        .cancel-reply {
-            background: none;
-            border: none;
-            color: #FF3B30;
-            cursor: pointer;
-            font-size: 1rem;
-        }
+/* dark-mode adjustments */
+.dark-mode .comment-input-container,
+.dark-mode .replying-to {
+    background-color: var(--dark-card);
+    border-top-color: var(--dark-border);
+}
+.dark-mode .comment-input { background-color: var(--dark-bg); color: var(--dark-text); border-color: var(--dark-border); }
 
         /* Edit Profile Screen */
         .edit-profile-screen {
@@ -2309,6 +2373,47 @@
                 flex-direction: column;
                 align-items: center;
             }
+
+            /* Mobile-specific engagement bar adjustments */
+            .engagement-bar {
+                padding: 8px 0;
+                gap: 8px;
+            }
+
+            .engagement-item {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .engagement-icon {
+                margin-right: 4px;
+                font-size: 1rem;
+            }
+
+            /* Reposition emoji reactions to the side on mobile */
+            .emoji-reactions {
+                position: absolute;
+                bottom: auto;
+                top: 50%;
+                left: 100%;
+                transform: translateY(-50%);
+                margin-left: 8px;
+                z-index: 10;
+            }
+
+            .emoji-reactions::before {
+                content: '';
+                position: absolute;
+                right: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                border: 6px solid transparent;
+                border-right-color: var(--light-card);
+            }
+
+            .dark-mode .emoji-reactions::before {
+                border-right-color: var(--dark-card);
+            }
         }
 
         @media (max-width: 360px) {
@@ -2429,7 +2534,6 @@
                     <div class="profile-name" id="profileName">Jordan Taylor</div>
                     <div class="profile-username" id="profileUsername">
                         <span>@jordant</span>
-                        <i class="fas fa-pencil-alt username-edit-large"></i>
                     </div>
                     <div class="profile-details">
                         <div class="profile-detail">
@@ -3361,8 +3465,64 @@
         const themeSettingsModal = document.getElementById('themeSettingsModal');
         const notificationSettingsModal = document.getElementById('notificationSettingsModal');
 
+        // Data Persistence Functions
+        function saveDataToStorage() {
+            const dataToSave = {
+                currentUser: appState.currentUser,
+                polls: appState.polls,
+                userPolls: appState.userPolls,
+                comments: appState.comments,
+                messageUsers: appState.messageUsers,
+                notifications: appState.notifications,
+                nextPollId: appState.nextPollId,
+                nextCommentId: appState.nextCommentId,
+                nextNotificationId: appState.nextNotificationId,
+                nextMessageId: appState.nextMessageId
+            };
+
+            try {
+                localStorage.setItem('pollSocialData', JSON.stringify(dataToSave));
+            } catch (error) {
+                console.error('Error saving data to localStorage:', error);
+            }
+        }
+
+        function loadDataFromStorage() {
+            try {
+                const savedData = localStorage.getItem('pollSocialData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+
+                    // Merge saved data with default state
+                    appState.currentUser = { ...appState.currentUser, ...parsedData.currentUser };
+                    appState.polls = parsedData.polls || appState.polls;
+                    appState.userPolls = parsedData.userPolls || appState.userPolls;
+                    appState.comments = parsedData.comments || appState.comments;
+                    appState.messageUsers = parsedData.messageUsers || appState.messageUsers;
+                    appState.notifications = parsedData.notifications || appState.notifications;
+                    appState.nextPollId = parsedData.nextPollId || appState.nextPollId;
+                    appState.nextCommentId = parsedData.nextCommentId || appState.nextCommentId;
+                    appState.nextNotificationId = parsedData.nextNotificationId || appState.nextNotificationId;
+                    appState.nextMessageId = parsedData.nextMessageId || appState.nextMessageId;
+
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error loading data from localStorage:', error);
+            }
+            return false;
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('pollSocialData');
+            location.reload();
+        }
+
         // Initialize the app
         function initApp() {
+            // Load saved data first
+            loadDataFromStorage();
+
             renderPolls();
             renderUserPolls();
             renderUserComments();
@@ -3685,16 +3845,16 @@
                     ${optionsHTML}
                 </div>
                 <div class="engagement-bar">
-                    <div class="engagement-item reaction-btn" data-poll-id="${poll.id}">
-                        ${reactionDisplay}
-                        <div class="emoji-reactions">
-                            <span class="emoji-reaction" data-emoji="😂" title="Laugh">😂</span>
-                            <span class="emoji-reaction" data-emoji="😢" title="Cry">😢</span>
-                            <span class="emoji-reaction" data-emoji="❤️" title="Heart">❤️</span>
-                            <span class="emoji-reaction" data-emoji="😠" title="Anger">😠</span>
-                            <span class="emoji-reaction" data-emoji="😄" title="Joy">😄</span>
+                        <div class="engagement-item reaction-btn" data-poll-id="${poll.id}">
+                            <div class="emoji-reactions">
+                                <span class="emoji-reaction" data-emoji="😂" title="Laugh">😂</span>
+                                <span class="emoji-reaction" data-emoji="😢" title="Cry">😢</span>
+                                <span class="emoji-reaction" data-emoji="❤️" title="Heart">❤️</span>
+                                <span class="emoji-reaction" data-emoji="😠" title="Anger">😠</span>
+                                <span class="emoji-reaction" data-emoji="😄" title="Joy">😄</span>
+                            </div>
+                            ${reactionDisplay}
                         </div>
-                    </div>
                     <div class="engagement-item comment-btn" data-poll-id="${poll.id}">
                         <i class="engagement-icon far fa-comment"></i>
                         <span>${poll.comments}</span>
@@ -4057,22 +4217,45 @@
                 }
             });
 
+            // Prevent underlying buttons from receiving pointer/touch events when interacting with emoji
+            // Use capture so this runs before other handlers
+            document.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.emoji-reaction')) {
+                    e.stopImmediatePropagation();
+                }
+                if (e.target.closest('.emoji-reactions')) {
+                    e.stopImmediatePropagation();
+                }
+            }, true);
+
+            // Older mobile fallback
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.emoji-reaction') || e.target.closest('.emoji-reactions')) {
+                    e.stopImmediatePropagation();
+                }
+            }, true);
+
             // Select emoji reaction
             document.addEventListener('click', (e) => {
                 if (e.target.closest('.emoji-reaction')) {
+                    // Prevent the click from bubbling to underlying buttons (comment/share)
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+
                     const emojiReaction = e.target.closest('.emoji-reaction');
                     const emoji = emojiReaction.dataset.emoji;
                     const reactionBtn = emojiReaction.closest('.reaction-btn');
                     const pollId = parseInt(reactionBtn.dataset.pollId);
-                    
+
                     reactToPoll(pollId, emoji);
-                    
+
                     // Hide emoji selector
                     const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
-                    emojiReactions.style.display = 'none';
-                    
+                    if (emojiReactions) emojiReactions.style.display = 'none';
+
                     // Clear any touch timer
                     clearTimeout(touchTimer);
+                    return; // stop further handling
                 }
             });
 
@@ -4130,6 +4313,9 @@
                 commentScreen.classList.remove('active');
                 appState.currentReplyingTo = null;
                 replyingTo.style.display = 'none';
+                // ensure any emoji popups are closed and remove body marker
+                try { closeAllEmojiReactions(); } catch (e) {}
+                try { document.body.classList.remove('comments-open'); } catch (e) {}
             });
 
             // Send Comment
@@ -4569,28 +4755,31 @@
             // Find the poll in either the main feed or user's polls
             let poll = appState.polls.find(p => p.id === pollId);
             let isUserPoll = false;
-            
+
             if (!poll) {
                 poll = appState.userPolls.find(p => p.id === pollId);
                 isUserPoll = true;
             }
-            
+
             if (!poll || poll.userVoted) return;
-            
+
             // Update poll state
             poll.userVoted = true;
             poll.userVoteOption = optionId;
-            
+
             // Update vote counts and percentages
             const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0) + 1;
-            
+
             poll.options.forEach(option => {
                 if (option.id === optionId) {
                     option.votes += 1;
                 }
                 option.percentage = Math.round((option.votes / totalVotes) * 100);
             });
-            
+
+            // Save data to localStorage
+            saveDataToStorage();
+
             // Re-render the poll
             if (isUserPoll) {
                 renderUserPolls();
@@ -4671,6 +4860,9 @@
 
         // Open comments for a poll
         function openComments(pollId) {
+            // close any open emoji popups to avoid visual glitches
+            closeAllEmojiReactions();
+
             const poll = appState.polls.find(p => p.id === pollId) || 
                          appState.userPolls.find(p => p.id === pollId);
             
@@ -4686,6 +4878,9 @@
             const commentScreen = document.getElementById('commentScreen');
             commentScreen.classList.add('active');
             commentScreen.dataset.currentPollId = pollId;
+
+            // mark body to indicate comments are open (used to hide emoji popups)
+            try { document.body.classList.add('comments-open'); } catch (e) {}
         }
 
         // Render comments for a poll
@@ -5228,6 +5423,61 @@
                 renderComments(pollId);
             }
         }
+
+        // Hide any visible emoji selectors (used to avoid visual glitches when changing views)
+        function closeAllEmojiReactions() {
+            try {
+                const all = document.querySelectorAll('.emoji-reactions');
+                all.forEach(el => {
+                    if (el && el.style) el.style.display = 'none';
+                });
+            } catch (err) {
+                // ignore
+            }
+
+            // clear any lingering touch timer used to auto-hide
+            try { clearTimeout(touchTimer); } catch (e) {}
+        }
+
+        // ---- Keep comments visible when composer is open, and scroll into view on reply ----
+        const commentScreenEl = document.getElementById('commentScreen');
+        const commentInputContainerEl = document.querySelector('.comment-input-container');
+        const commentsListEl = document.querySelector('.comments-list');
+        const replyingToEl = document.getElementById('replyingTo');
+        const commentInputEl = document.getElementById('commentInput');
+
+        function adjustCommentsPadding() {
+            if (!commentsListEl || !commentInputContainerEl) return;
+            const containerHeight = commentInputContainerEl.getBoundingClientRect().height;
+            commentsListEl.style.paddingBottom = (containerHeight + 80) + 'px'; // 80 = safety margin
+        }
+
+        window.addEventListener('load', adjustCommentsPadding);
+        window.addEventListener('resize', adjustCommentsPadding);
+
+        function focusComposerAndScroll() {
+            adjustCommentsPadding();
+            setTimeout(() => {
+                if (commentInputEl) {
+                    commentInputEl.focus();
+                    commentInputEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            }, 80);
+        }
+
+        // When user clicks Reply, ensure composer is visible
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.reply-btn')) {
+                setTimeout(() => focusComposerAndScroll(), 120);
+            }
+        });
+
+        // When opening comment screen via comment button, adjust padding shortly after
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.comment-btn')) {
+                setTimeout(adjustCommentsPadding, 40);
+            }
+        });
     </script>
 </body>
 </html>
