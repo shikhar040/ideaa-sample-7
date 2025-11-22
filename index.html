@@ -109,6 +109,81 @@
         .dark-mode .profile-settings-btn:hover {
             background-color: var(--dark-elements);
         }
+        
+        /* Search Button (top-right) */
+        .search-btn {
+            position: absolute;
+            right: 64px; /* sit left of profile/settings button */
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            color: var(--light-text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: block;
+        }
+
+        .search-btn:hover {
+            background-color: var(--light-elements);
+        }
+
+        .dark-mode .search-btn {
+            color: var(--dark-text);
+        }
+
+        .dark-mode .search-btn:hover {
+            background-color: var(--dark-elements);
+        }
+
+        /* Search panel overlay */
+        .search-panel {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.35);
+            display: none;
+            z-index: 300;
+            backdrop-filter: blur(6px);
+            padding: 20px;
+        }
+
+        .search-panel.open {
+            display: block;
+        }
+
+        .search-panel .panel-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            background: var(--light-card);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dark-mode .search-panel .panel-inner {
+            background: var(--dark-card);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--light-border);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .search-results { max-height: 60vh; overflow: auto; }
+        .search-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:8px; cursor:pointer; }
+        .search-item:hover { background: rgba(0,0,0,0.03); }
+        .search-item .avatar { width:40px; height:40px; border-radius:50%; background:var(--light-elements); display:flex; align-items:center; justify-content:center; }
+        .dark-mode .search-item:hover { background: rgba(255,255,255,0.02); }
+        .search-item .body { font-size:0.95rem; }
+        .search-item .muted { color: #888; font-size:0.85rem; }
 
         /* Navigation */
         .bottom-nav {
@@ -2446,10 +2521,26 @@
     <!-- App Header -->
     <header class="app-header">
         <h1 class="app-name">PollSocial</h1>
+        <button class="search-btn" id="searchBtn" aria-label="Search">
+            <i class="fas fa-search"></i>
+        </button>
         <button class="profile-settings-btn" id="profileSettingsBtn">
             <i class="fas fa-cog"></i>
         </button>
     </header>
+
+    <!-- Search Panel -->
+    <div id="searchPanel" class="search-panel" aria-hidden="true">
+        <div class="panel-inner">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <input id="searchInput" class="search-input" placeholder="Search users by name or username" aria-label="Search users">
+                <button class="close-search" aria-label="Close search" style="margin-left:8px;padding:8px;border-radius:8px;border:none;background:none;">✕</button>
+            </div>
+            <div id="searchResults" class="search-results">
+                <p class="muted">Type a username or name to find users.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Home Screen -->
     <section id="homeScreen" class="screen active">
@@ -4069,6 +4160,16 @@
         }
 
         // Setup event listeners
+        // Small helper: safely find the closest element matching selector from an event target
+        function closestEl(node, selector) {
+            try {
+                while (node && node.nodeType !== 1) node = node.parentNode;
+                return node ? node.closest(selector) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
         function setupEventListeners() {
             // Navigation
             const navItems = document.querySelectorAll('.nav-item');
@@ -4108,6 +4209,91 @@
                 screens.forEach(screen => screen.classList.remove('active'));
                 document.getElementById('settingsScreen').classList.add('active');
             });
+
+            // Search UI setup
+            const searchBtn = document.getElementById('searchBtn');
+            const searchPanel = document.getElementById('searchPanel');
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+
+            function openSearchPanel() {
+                if (!searchPanel) return;
+                searchPanel.classList.add('open');
+                searchPanel.setAttribute('aria-hidden', 'false');
+                setTimeout(() => {
+                    if (searchInput) searchInput.focus();
+                }, 60);
+                renderSearchResults('');
+            }
+
+            function closeSearchPanel() {
+                if (!searchPanel) return;
+                searchPanel.classList.remove('open');
+                searchPanel.setAttribute('aria-hidden', 'true');
+                if (searchBtn) searchBtn.focus();
+            }
+
+            if (searchBtn) searchBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                openSearchPanel();
+            });
+
+            if (searchPanel) {
+                const closeBtn = searchPanel.querySelector('.close-search');
+                if (closeBtn) closeBtn.addEventListener('click', (ev) => { ev.stopPropagation(); closeSearchPanel(); });
+                searchPanel.addEventListener('click', (ev) => {
+                    if (ev.target === searchPanel) closeSearchPanel();
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (ev) => {
+                    renderSearchResults(ev.target.value);
+                });
+                searchInput.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Escape') closeSearchPanel();
+                    if (ev.key === 'Enter') {
+                        const first = searchResults && searchResults.querySelector('.search-item');
+                        if (first) first.click();
+                    }
+                });
+            }
+
+            function renderSearchResults(query) {
+                if (!searchResults) return;
+                const q = (query || '').trim().toLowerCase();
+                // Search among dummyUsers (messaging users) and include current user by username
+                const users = (appState && Array.isArray(appState.dummyUsers)) ? appState.dummyUsers : [];
+                searchResults.innerHTML = '';
+                if (!q) {
+                    searchResults.innerHTML = '<p class="muted">Type a username or name to find users.</p>';
+                    return;
+                }
+                const matches = users.filter(u => {
+                    const uname = (u.username || '').toLowerCase();
+                    const name = (u.name || '').toLowerCase();
+                    return uname.includes(q) || name.includes(q);
+                });
+                if (matches.length === 0) {
+                    searchResults.innerHTML = '<p class="muted">No users found</p>';
+                    return;
+                }
+                matches.forEach(u => {
+                    const item = document.createElement('div');
+                    item.className = 'search-item';
+                    item.tabIndex = 0;
+                    item.innerHTML = `\n                        <div class="avatar">${u.profilePic ? `<img src="${u.profilePic}" alt="${u.username}" style="width:100%;height:100%;border-radius:50%;">` : '<i class="fas fa-user"></i>'}</div>\n                        <div class="body">\n                            <div><strong>@${u.username || ''}</strong></div>\n                            <div class="muted">${u.name || ''}</div>\n                        </div>`;
+                    item.addEventListener('click', () => {
+                        // Open user profile by id if available
+                        if (typeof openUserProfile === 'function') {
+                            openUserProfile(u.id);
+                        }
+                        closeSearchPanel();
+                    });
+                    item.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') item.click(); });
+                    searchResults.appendChild(item);
+                });
+            }
 
             // Settings button
             settingsBtn.addEventListener('click', () => {
@@ -4165,33 +4351,35 @@
 
             // Poll Voting
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.poll-option')) {
-                    const optionElement = e.target.closest('.poll-option');
+                const optionElement = closestEl(e.target, '.poll-option');
+                if (optionElement) {
                     const pollId = parseInt(optionElement.dataset.pollId);
                     const optionId = parseInt(optionElement.dataset.optionId);
-                    
                     voteOnPoll(pollId, optionId);
                 }
             });
 
             // Emoji Reaction functionality
             document.addEventListener('mouseenter', (e) => {
-                if (e.target.closest('.reaction-btn')) {
-                    const reactionBtn = e.target.closest('.reaction-btn');
+                const reactionBtn = closestEl(e.target, '.reaction-btn');
+                if (reactionBtn) {
                     const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
-                    emojiReactions.style.display = 'block';
+                    if (emojiReactions) emojiReactions.style.display = 'block';
                 }
             }, true);
 
             document.addEventListener('mouseleave', (e) => {
-                if (e.target.closest('.reaction-btn')) {
-                    const reactionBtn = e.target.closest('.reaction-btn');
+                const reactionBtn = closestEl(e.target, '.reaction-btn');
+                if (reactionBtn) {
                     const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
-                    
                     // Use setTimeout to check if we've actually left the element
                     setTimeout(() => {
-                        if (!reactionBtn.matches(':hover') && !emojiReactions.matches(':hover')) {
-                            emojiReactions.style.display = 'none';
+                        try {
+                            if (!reactionBtn.matches(':hover') && !(emojiReactions && emojiReactions.matches(':hover'))) {
+                                if (emojiReactions) emojiReactions.style.display = 'none';
+                            }
+                        } catch (err) {
+                            if (emojiReactions) emojiReactions.style.display = 'none';
                         }
                     }, 100);
                 }
@@ -4200,19 +4388,26 @@
             // Mobile touch for emoji reactions
             let touchTimer;
             document.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.reaction-btn')) {
-                    const reactionBtn = e.target.closest('.reaction-btn');
+                // If comments are open, do not show emoji popups
+                if (document.body.classList.contains('comments-open')) return;
+
+                const reactionBtn = closestEl(e.target, '.reaction-btn');
+                if (reactionBtn) {
                     const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
-                    
+
                     // Clear any existing timer
                     clearTimeout(touchTimer);
-                    
+
                     // Show emoji reactions
-                    emojiReactions.style.display = 'block';
-                    
+                    if (emojiReactions && emojiReactions.style) {
+                        emojiReactions.style.display = 'block';
+                        emojiReactions.style.opacity = '1';
+                        emojiReactions.style.pointerEvents = 'auto';
+                    }
+
                     // Set timer to hide after 3 seconds if no interaction
                     touchTimer = setTimeout(() => {
-                        emojiReactions.style.display = 'none';
+                        if (emojiReactions && emojiReactions.style) emojiReactions.style.display = 'none';
                     }, 3000);
                 }
             });
@@ -4220,37 +4415,37 @@
             // Prevent underlying buttons from receiving pointer/touch events when interacting with emoji
             // Use capture so this runs before other handlers
             document.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('.emoji-reaction')) {
+                if (closestEl(e.target, '.emoji-reaction')) {
                     e.stopImmediatePropagation();
                 }
-                if (e.target.closest('.emoji-reactions')) {
+                if (closestEl(e.target, '.emoji-reactions')) {
                     e.stopImmediatePropagation();
                 }
             }, true);
 
             // Older mobile fallback
             document.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.emoji-reaction') || e.target.closest('.emoji-reactions')) {
+                if (closestEl(e.target, '.emoji-reaction') || closestEl(e.target, '.emoji-reactions')) {
                     e.stopImmediatePropagation();
                 }
             }, true);
 
             // Select emoji reaction
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.emoji-reaction')) {
+                const emojiReaction = closestEl(e.target, '.emoji-reaction');
+                if (emojiReaction) {
                     // Prevent the click from bubbling to underlying buttons (comment/share)
                     e.stopImmediatePropagation();
                     e.preventDefault();
 
-                    const emojiReaction = e.target.closest('.emoji-reaction');
                     const emoji = emojiReaction.dataset.emoji;
-                    const reactionBtn = emojiReaction.closest('.reaction-btn');
-                    const pollId = parseInt(reactionBtn.dataset.pollId);
+                    const reactionBtn = closestEl(emojiReaction, '.reaction-btn') || emojiReaction.closest('.reaction-btn');
+                    const pollId = reactionBtn ? parseInt(reactionBtn.dataset.pollId) : NaN;
 
-                    reactToPoll(pollId, emoji);
+                    if (!isNaN(pollId)) reactToPoll(pollId, emoji);
 
                     // Hide emoji selector
-                    const emojiReactions = reactionBtn.querySelector('.emoji-reactions');
+                    const emojiReactions = reactionBtn ? reactionBtn.querySelector('.emoji-reactions') : null;
                     if (emojiReactions) emojiReactions.style.display = 'none';
 
                     // Clear any touch timer
@@ -4261,30 +4456,27 @@
 
             // Comment functionality
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.comment-btn')) {
-                    const commentBtn = e.target.closest('.comment-btn');
+                const commentBtn = closestEl(e.target, '.comment-btn');
+                if (commentBtn) {
                     const pollId = parseInt(commentBtn.dataset.pollId);
-                    
                     openComments(pollId);
                 }
             });
 
             // User comment click (opens poll comments)
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.recent-comment')) {
-                    const commentElement = e.target.closest('.recent-comment');
+                const commentElement = closestEl(e.target, '.recent-comment');
+                if (commentElement) {
                     const pollId = parseInt(commentElement.dataset.pollId);
-                    
                     openComments(pollId);
                 }
             });
 
             // Message user click
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.message-user-item')) {
-                    const userElement = e.target.closest('.message-user-item');
+                const userElement = closestEl(e.target, '.message-user-item');
+                if (userElement) {
                     const userId = parseInt(userElement.dataset.userId);
-                    
                     openMessageThread(userId);
                 }
             });
@@ -4516,10 +4708,9 @@
 
             // User profile clicks
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.username') || e.target.closest('.profile-pic')) {
-                    const element = e.target.closest('.username') || e.target.closest('.profile-pic');
+                const element = closestEl(e.target, '.username') || closestEl(e.target, '.profile-pic');
+                if (element) {
                     const userId = parseInt(element.dataset.userId);
-                    
                     if (userId !== appState.currentUser.id) {
                         openUserProfile(userId);
                     }
@@ -4528,13 +4719,12 @@
 
             // Notification clicks
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.notification-card')) {
-                    const notificationElement = e.target.closest('.notification-card');
+                const notificationElement = closestEl(e.target, '.notification-card');
+                if (notificationElement) {
                     const type = notificationElement.dataset.type;
                     const pollId = parseInt(notificationElement.dataset.pollId);
                     const commentId = parseInt(notificationElement.dataset.commentId);
                     const userId = parseInt(notificationElement.dataset.userId);
-                    
                     handleNotificationClick(type, pollId, commentId, userId);
                 }
             });
@@ -4542,8 +4732,8 @@
             // Three-dot menu functionality
             document.addEventListener('click', (e) => {
                 // Handle poll menu button clicks
-                if (e.target.closest('.poll-menu-btn')) {
-                    const menuBtn = e.target.closest('.poll-menu-btn');
+                if (closestEl(e.target, '.poll-menu-btn')) {
+                    const menuBtn = closestEl(e.target, '.poll-menu-btn');
                     const dropdown = menuBtn.nextElementSibling;
                     
                     // Close any other open dropdowns
@@ -4566,8 +4756,8 @@
                 }
                 
                 // Handle comment menu button clicks
-                if (e.target.closest('.comment-menu-btn')) {
-                    const menuBtn = e.target.closest('.comment-menu-btn');
+                if (closestEl(e.target, '.comment-menu-btn')) {
+                    const menuBtn = closestEl(e.target, '.comment-menu-btn');
                     const dropdown = menuBtn.nextElementSibling;
                     
                     // Close any other open dropdowns
@@ -4590,8 +4780,8 @@
                 }
                 
                 // Handle dropdown item clicks
-                if (e.target.closest('.dropdown-item')) {
-                    const dropdownItem = e.target.closest('.dropdown-item');
+                if (closestEl(e.target, '.dropdown-item')) {
+                    const dropdownItem = closestEl(e.target, '.dropdown-item');
                     const dropdown = dropdownItem.closest('.dropdown-menu');
                     const parentElement = dropdown.closest('.poll-card, .recent-comment, .comment-item');
                     
@@ -4666,19 +4856,19 @@
                     modal.querySelectorAll('.settings-modal-option i').forEach(icon => {
                         icon.style.display = 'none';
                     });
-                    
+
                     // Add checkmark to selected option
                     option.querySelector('i').style.display = 'block';
                 });
             });
-            
+
             // Add save handler
             const saveButton = modal.querySelector('.modal-btn-primary');
             saveButton.onclick = () => {
                 const selectedOption = modal.querySelector('.settings-modal-option i[style*="block"]');
                 if (selectedOption) {
                     const selectedValue = selectedOption.closest('.settings-modal-option').dataset.value;
-                    
+
                     switch (type) {
                         case 'privacy':
                             appState.currentUser.privacy = selectedValue;
@@ -5174,11 +5364,12 @@
 
         // Remove poll option
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-option')) {
-                const optionInput = e.target.closest('.poll-option-input');
-                if (document.querySelectorAll('.poll-option-input').length > 2) {
+            const removeBtn = closestEl(e.target, '.remove-option');
+            if (removeBtn) {
+                const optionInput = closestEl(e.target, '.poll-option-input');
+                if (document.querySelectorAll('.poll-option-input').length > 2 && optionInput) {
                     optionInput.remove();
-                    
+
                     // Hide remove buttons if only 2 options left
                     if (document.querySelectorAll('.poll-option-input').length === 2) {
                         const removeButtons = document.querySelectorAll('.remove-option');
@@ -5352,16 +5543,13 @@
 
         // Add event listener for reply buttons
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.reply-btn')) {
-                const replyBtn = e.target.closest('.reply-btn');
+            const replyBtn = closestEl(e.target, '.reply-btn');
+            if (replyBtn) {
                 const commentId = parseInt(replyBtn.dataset.commentId);
                 const userName = replyBtn.dataset.userName;
-                
-                appState.currentReplyingTo = {
-                    commentId: commentId,
-                    userName: userName
-                };
-                
+
+                appState.currentReplyingTo = { commentId: commentId, userName: userName };
+
                 replyingToText.innerHTML = `Replying to <strong>${userName}</strong>`;
                 replyingTo.style.display = 'flex';
                 commentInput.focus();
@@ -5371,10 +5559,9 @@
 
         // Add event listener for comment likes
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.like-comment-btn')) {
-                const likeBtn = e.target.closest('.like-comment-btn');
+            const likeBtn = closestEl(e.target, '.like-comment-btn');
+            if (likeBtn) {
                 const commentId = parseInt(likeBtn.dataset.commentId);
-                
                 toggleCommentLike(commentId);
             }
         });
@@ -5435,8 +5622,25 @@
             try {
                 const all = document.querySelectorAll('.emoji-reactions');
                 all.forEach(el => {
-                    if (el && el.style) el.style.display = 'none';
+                    if (el && el.style) {
+                        el.style.display = 'none';
+                        el.style.opacity = '0';
+                        el.style.pointerEvents = 'none';
+                    }
+                    try {
+                        // also defensively hide any inner emoji spans
+                        const inner = el.querySelectorAll && el.querySelectorAll('.emoji-reaction');
+                        if (inner && inner.forEach) inner.forEach(s => { if (s && s.style) s.style.pointerEvents = 'none'; });
+                    } catch (_err) {}
                 });
+
+                // hide any singleton portal if present
+                const portal = document.getElementById('emojiPortal');
+                if (portal && portal.style) {
+                    portal.style.display = 'none';
+                    portal.style.opacity = '0';
+                    portal.style.pointerEvents = 'none';
+                }
             } catch (err) {
                 // ignore
             }
@@ -5473,17 +5677,37 @@
 
         // When user clicks Reply, ensure composer is visible
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.reply-btn')) {
+            if (closestEl(e.target, '.reply-btn')) {
                 setTimeout(() => focusComposerAndScroll(), 120);
             }
         });
 
         // When opening comment screen via comment button, adjust padding shortly after
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.comment-btn')) {
+            if (closestEl(e.target, '.comment-btn')) {
                 setTimeout(adjustCommentsPadding, 40);
             }
         });
+
+        // Observe body class changes so we can auto-hide emoji popups when comments open
+        (function() {
+            try {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(m => {
+                        if (m.attributeName === 'class') {
+                            if (document.body.classList.contains('comments-open')) {
+                                // force-hide any emoji UI
+                                try { closeAllEmojiReactions(); } catch (e) {}
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+            } catch (err) {
+                // ignore observer errors on older browsers
+            }
+        })();
     </script>
 </body>
 </html>
